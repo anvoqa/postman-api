@@ -1,0 +1,851 @@
+{
+	"info": {
+		"_postman_id": "287a47ca-744f-4c8d-83d9-440648bcbcd9",
+		"name": "Contact List API Test",
+		"description": "This is the API for the Contact List App: \nhttps://thinking-tester-contact-list.herokuapp.com/",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1682524"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Add User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify email matches with the body sent\r",
+									"pm.test(\"Verify registered Email\", () => {\r",
+									"    pm.expect(response.user).to.be.an('object');\r",
+									"    pm.expect(response.user.email).to.eql(pm.collectionVariables.get(\"registedEmail\"));\r",
+									"})\r",
+									"\r",
+									"//Save owner id to be used in contact requests\r",
+									"pm.collectionVariables.set(\"ownerId\", response.user._id);\r",
+									"\r",
+									"postman.setNextRequest(\"Log In User\");\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"registedEmail\", \"an.vo\" + Math.floor(Math.random() * 10000) + \"@gmail.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"email\": \"{{registedEmail}}\",\n    \"password\": \"1234567\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log In User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify email matches with the logged in email\r",
+									"pm.test(\"Verify logged in Email\", () => {\r",
+									"    pm.expect(response.user).to.be.an('object');\r",
+									"    pm.expect(response.user.email).to.eql(pm.collectionVariables.get(\"registedEmail\"));\r",
+									"})\r",
+									"\r",
+									"//Set token as a global variable to be re-used in later requests\r",
+									"if(response.token != \"\"){\r",
+									"pm.collectionVariables.set(\"token\", response.token);\r",
+									"}\r",
+									"\r",
+									"postman.setNextRequest(\"Get User Profile\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{registedEmail}}\",\n    \"password\": \"1234567\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users/login",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify user infor\r",
+									"pm.test(\"Verify User Infor\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"registedEmail\"));\r",
+									"    pm.expect(response.firstName).to.eql(\"Test\");\r",
+									"    pm.expect(response.lastName).to.eql(\"User\");\r",
+									"})\r",
+									"\r",
+									"postman.setNextRequest(\"Update User\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users/me",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "The GET User Profile operation is not available through the UI."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"updatedEmail\", \"an.vo.new\" + Math.floor(Math.random() * 10000) + \"@gmail.com\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify user infor\r",
+									"pm.test(\"Verify User Infor\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"updatedEmail\"));\r",
+									"    pm.expect(response.firstName).to.eql(\"Test_Updated\");\r",
+									"    pm.expect(response.lastName).to.eql(\"User_Updated\");\r",
+									"})\r",
+									"\r",
+									"postman.setNextRequest(\"Add Contact\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Test_Updated\",\n    \"lastName\": \"User_Updated\",\n    \"email\": \"{{updatedEmail}}\",\n    \"password\": \"1234567\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users/me",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "The PATCH Update User operation is not available through the UI."
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users/logout",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"//Clean up collection variables after test flow is completed\r",
+									"pm.collectionVariables.unset(\"registedEmail\");\r",
+									"pm.collectionVariables.unset(\"token\");\r",
+									"pm.collectionVariables.unset(\"updatedEmail\");\r",
+									"pm.collectionVariables.unset(\"ownerId\");\r",
+									"\r",
+									"postman.setNextRequest(null);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/users/me",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "The DELETE User operation is not available through the UI."
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Contacts",
+			"item": [
+				{
+					"name": "Add Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify contact info\r",
+									"pm.test(\"Verify Contact Info\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"\r",
+									"    const contactInfo = pm.collectionVariables.get(\"contactInfo\");\r",
+									"\r",
+									"    pm.expect(response.firstName).to.eql(contactInfo.firstName);\r",
+									"    pm.expect(response.lastName).to.eql(contactInfo.lastName);\r",
+									"    pm.expect(response.birthdate).to.eql(contactInfo.birthdate);\r",
+									"    pm.expect(response.email).to.eql(contactInfo.email);\r",
+									"    pm.expect(response.phone).to.eql(contactInfo.phone);\r",
+									"    pm.expect(response.street1).to.eql(contactInfo.street1);\r",
+									"    pm.expect(response.street2).to.eql(contactInfo.street2);\r",
+									"    pm.expect(response.city).to.eql(contactInfo.city);\r",
+									"    pm.expect(response.stateProvince).to.eql(contactInfo.stateProvince);\r",
+									"    pm.expect(response.postalCode).to.eql(contactInfo.postalCode);\r",
+									"    pm.expect(response.country).to.eql(contactInfo.country);\r",
+									"    pm.expect(response.owner).to.eql(pm.collectionVariables.get(\"ownerId\"));\r",
+									"});\r",
+									"\r",
+									"//Store contact Id to be used in later requests\r",
+									"pm.collectionVariables.set(\"contactId\", response._id);\r",
+									"\r",
+									"postman.setNextRequest(\"Get Contact List\");\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomEmail = \"an.vo\" + Math.floor(Math.random() * 10000) + \"@contact.com\";\r",
+									"\r",
+									"pm.collectionVariables.set(\"contactEmail\", randomEmail);\r",
+									"\r",
+									"let contact = {\r",
+									"    \"firstName\": \"John\",\r",
+									"    \"lastName\": \"Doe\",\r",
+									"    \"birthdate\": \"1970-01-01\",\r",
+									"    \"email\": randomEmail,\r",
+									"    \"phone\": \"8005555555\",\r",
+									"    \"street1\": \"1 Main St.\",\r",
+									"    \"street2\": \"Apartment A\",\r",
+									"    \"city\": \"Anytown\",\r",
+									"    \"stateProvince\": \"KS\",\r",
+									"    \"postalCode\": \"12345\",\r",
+									"    \"country\": \"USA\"\r",
+									"}\r",
+									"\r",
+									"pm.collectionVariables.set(\"contactInfo\", contact);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"birthdate\": \"1970-01-01\",\n    \"email\": \"{{contactEmail}}\",\n    \"phone\": \"8005555555\",\n    \"street1\": \"1 Main St.\",\n    \"street2\": \"Apartment A\",\n    \"city\": \"Anytown\",\n    \"stateProvince\": \"KS\",\n    \"postalCode\": \"12345\",\n    \"country\": \"USA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contact List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify number of contacts\r",
+									"pm.test(\"Verify number of contacts\", function () {\r",
+									"    pm.expect(response.length).to.equal(1);\r",
+									"});\r",
+									"\r",
+									"postman.setNextRequest(\"Get Contact\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify contact info\r",
+									"pm.test(\"Verify Contact Info\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"\r",
+									"    const contactInfo = pm.collectionVariables.get(\"contactInfo\");\r",
+									"\r",
+									"    pm.expect(response.firstName).to.eql(contactInfo.firstName);\r",
+									"    pm.expect(response.lastName).to.eql(contactInfo.lastName);\r",
+									"    pm.expect(response.birthdate).to.eql(contactInfo.birthdate);\r",
+									"    pm.expect(response.email).to.eql(contactInfo.email);\r",
+									"    pm.expect(response.phone).to.eql(contactInfo.phone);\r",
+									"    pm.expect(response.street1).to.eql(contactInfo.street1);\r",
+									"    pm.expect(response.street2).to.eql(contactInfo.street2);\r",
+									"    pm.expect(response.city).to.eql(contactInfo.city);\r",
+									"    pm.expect(response.stateProvince).to.eql(contactInfo.stateProvince);\r",
+									"    pm.expect(response.postalCode).to.eql(contactInfo.postalCode);\r",
+									"    pm.expect(response.country).to.eql(contactInfo.country);\r",
+									"    pm.expect(response.owner).to.eql(pm.collectionVariables.get(\"ownerId\"));\r",
+									"});\r",
+									"\r",
+									"postman.setNextRequest(\"Update Contact\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts/{{contactId}}",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts",
+								"{{contactId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify new contact info\r",
+									"pm.test(\"Verify new Contact Info\", () => {\r",
+									"    pm.expect(response).to.be.an('object');\r",
+									"\r",
+									"    const updatedContact = pm.collectionVariables.get(\"updatedContactInfo\");\r",
+									"\r",
+									"    pm.expect(response._id).to.eql(pm.collectionVariables.get(\"contactId\"));\r",
+									"    pm.expect(response.firstName).to.eql(updatedContact.firstName);\r",
+									"    pm.expect(response.lastName).to.eql(updatedContact.lastName);\r",
+									"    pm.expect(response.birthdate).to.eql(updatedContact.birthdate);\r",
+									"    pm.expect(response.email).to.eql(updatedContact.email);\r",
+									"    pm.expect(response.phone).to.eql(updatedContact.phone);\r",
+									"    pm.expect(response.street1).to.eql(updatedContact.street1);\r",
+									"    pm.expect(response.street2).to.eql(updatedContact.street2);\r",
+									"    pm.expect(response.city).to.eql(updatedContact.city);\r",
+									"    pm.expect(response.stateProvince).to.eql(updatedContact.stateProvince);\r",
+									"    pm.expect(response.postalCode).to.eql(updatedContact.postalCode);\r",
+									"    pm.expect(response.country).to.eql(updatedContact.country);\r",
+									"    pm.expect(response.owner).to.eql(pm.collectionVariables.get(\"ownerId\"));\r",
+									"});\r",
+									"\r",
+									"postman.setNextRequest(\"Update Contact First Name\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const updatedContactEmail = \"update\" + Math.floor(Math.random() * 10000) + \"@contact.com\";\r",
+									"const updatedContact =\r",
+									"{\r",
+									"    \"firstName\": \"Amy\",\r",
+									"    \"lastName\": \"Miller\",\r",
+									"    \"birthdate\": \"1992-02-02\",\r",
+									"    \"email\": updatedContactEmail,\r",
+									"    \"phone\": \"8005554242\",\r",
+									"    \"street1\": \"13 School St.\",\r",
+									"    \"street2\": \"Apt. 5\",\r",
+									"    \"city\": \"Washington\",\r",
+									"    \"stateProvince\": \"QC\",\r",
+									"    \"postalCode\": \"A1A1A1\",\r",
+									"    \"country\": \"Canada\"\r",
+									"}\r",
+									"\r",
+									"pm.collectionVariables.set(\"updatedContactEmail\", updatedContactEmail);\r",
+									"pm.collectionVariables.set(\"updatedContactInfo\", updatedContact);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Amy\",\n    \"lastName\": \"Miller\",\n    \"birthdate\": \"1992-02-02\",\n    \"email\": \"{{updatedContactEmail}}\",\n    \"phone\": \"8005554242\",\n    \"street1\": \"13 School St.\",\n    \"street2\": \"Apt. 5\",\n    \"city\": \"Washington\",\n    \"stateProvince\": \"QC\",\n    \"postalCode\": \"A1A1A1\",\n    \"country\": \"Canada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts/{{contactId}}",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts",
+								"{{contactId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Contact First Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//Verify response code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"//Verify new contact info\r",
+									"pm.test(\"Verify new First Name\", () => {\r",
+									"    pm.expect(response.firstName).to.be.equal('Tester');\r",
+									"});\r",
+									"\r",
+									"postman.setNextRequest(\"Delete Contact\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Tester\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts/{{contactId}}",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts",
+								"{{contactId}}"
+							]
+						},
+						"description": "The PATCH Update Contact operation is not available through the UI."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Deletion success message received\", function () {",
+									"    pm.response.to.have.body(\"Contact deleted\");",
+									"});",
+									"",
+									"//Clean up the collection variables",
+									"pm.collectionVariables.unset(\"contactEmail\");",
+									"pm.collectionVariables.unset(\"contactInfo\");",
+									"pm.collectionVariables.unset(\"contactId\");",
+									"pm.collectionVariables.unset(\"updatedContactInfo\");",
+									"pm.collectionVariables.unset(\"updatedContactEmail\");",
+									"",
+									"postman.setNextRequest(\"Delete User\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://thinking-tester-contact-list.herokuapp.com/contacts/{{contactId}}",
+							"protocol": "https",
+							"host": [
+								"thinking-tester-contact-list",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"contacts",
+								"{{contactId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
