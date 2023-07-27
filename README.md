@@ -9,6 +9,19 @@ The API documentation can be found here: https://documenter.getpostman.com/view/
 
 In addtion, before actually implementing the tests, I also developed the test plan to list out what tests will be done, the goal of each test, details of implementation and the expeced results. The test plan can be found [here](https://docs.google.com/spreadsheets/d/1zww2tnybj55bBrq6z0RN7tWUhzfckas3QCLJlhOE5gY/edit?usp=sharing).
 
+### End to End Flow
+1. Send POST request to register an account
+2. Send POST request to login to the registred account and get the logged in token to be used in later requests
+3. Send GET request to get user profile
+4. Send PATCH request to partially update user (e.g. First Name)
+5. Send POST request to create a new contact
+6. Send GET request to get the contact list
+7. Send GET request to get a specific contact
+8. Send PUT request to update a contact
+9. Send PATCH request to partially update a contact
+10. Send DELETE request to delete a contact
+11. Send DELETE contact to delete the user  
+
 ## 📖Knowledge📖
 - Use Postman to create **POST, GET, PUT, PATCH, DELETE** requests and write tests to veriy **status code** and **data in body** of responses
 - Use dynamic variables to generate random test data so that tests can be run many times without conflict and failing
